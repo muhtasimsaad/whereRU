@@ -7,12 +7,15 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 
 import android.os.Build;
+import android.preference.PreferenceManager;
+import android.support.annotation.IntegerRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -50,7 +53,9 @@ import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener {
+public class MapsActivity extends FragmentActivity implements
+        OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,LocationListener {
     String[] mobileArray ;
     int[] ids;
     Integer[] imageid ;
@@ -59,6 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static ProgressDialog pdMarkers2;
     public static ProgressDialog pdMarkers3;
     LatLng ltlng;
+    static boolean updateRequired=false;
     static int goToFlag=-1;
     SQLiteDatabase db;
     static packet p=new packet();
@@ -84,7 +90,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-
         if(Login.userID==-1){
             Intent i=new Intent(MapsActivity.this,Login.class);
             i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -97,32 +102,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         final ListView ls = (ListView) findViewById(R.id.listView);
         ls.setVisibility(View.GONE);
-         TextView t=(TextView)findViewById(R.id.textView);
-         t.setText("");
+        TextView t=(TextView)findViewById(R.id.textView);
+        t.setText("");
 
         InitiateDatabase();
         final Button acnts=(Button)findViewById(R.id.accounts);
         acnts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i=new Intent(MapsActivity.this, navigation_accounts.class);
+                Intent i=new Intent(MapsActivity.this, nav_mother.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
             }
         });
+
         readyTheProgressDilog();
         final Button MagnifyingGlass = (Button) findViewById(R.id.search_buttom);
         final Button updateButton = (Button) findViewById(R.id.updateButton);
+        final Button logout = (Button) findViewById(R.id.logout);
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try{
-                updateFriendList();
-                downloadMarkers();
+
+                  //  Toast.makeText(getApplicationContext(), "avatar: "+p.frnds.get(0).imageID+"--"+p.frnds.get(1).imageID, Toast.LENGTH_SHORT).show();
+
+                   startUpdating();
                 }
                 catch (Exception rr){Toast.makeText(getApplicationContext(),rr.getMessage(),Toast.LENGTH_LONG).show();
                 }
             }
         });
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences.Editor editor = preferences.edit();
+                  logout.setOnClickListener(new View.OnClickListener() {
+                 @Override
+                  public void onClick(View v) {
+
+                     //destroying Login data
+
+                     editor.putInt("ID",-1);
+                     editor.apply();
+                     Login.userID=-1;
+
+                     Intent i=new Intent(MapsActivity.this,Login.class);
+                     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                     startActivity(i);
+
+                         }
+                    });
         MagnifyingGlass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,8 +174,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onDismiss(DialogInterface dialog) {
 
-
-
                 upDateMarkers(logger.markers);
                 putMarkers();
                 cache();
@@ -156,7 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
- if(!cached()) {
+ if(!cached() || updateRequired) {
      if(debug){Toast.makeText(getApplicationContext(), "Downloading For ID: "+Login.userID, Toast.LENGTH_SHORT).show();}
     pdMarkers = new ProgressDialog(MapsActivity.this);
     pdMarkers.setTitle("Downloading");
@@ -169,8 +195,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public void onDismiss(DialogInterface dialog) {
             if(debug){Toast.makeText(getApplicationContext(), "Frnd List: "+logger.frndlst, Toast.LENGTH_SHORT).show();}
-
-            updateFriendList();
+              updateFriendList();
             downloadMarkers();
         }
     });
@@ -217,6 +242,32 @@ else {
 
     }
 
+    private void startUpdating(){
+
+        pdMarkers = new ProgressDialog(MapsActivity.this);
+        pdMarkers.setTitle("Downloading");
+        pdMarkers.setMessage("Please Wait");
+        pdMarkers.setCancelable(false);
+
+        pdMarkers.show();
+
+
+        logger l=new logger (this,this,"asd");
+        l.execute("dlFriendList","","");
+
+
+        pdMarkers.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if(debug){Toast.makeText(getApplicationContext(), "Frnd List: "+logger.frndlst+" for ID: "+Login.userID, Toast.LENGTH_SHORT).show();}
+                //Toast.makeText(getApplicationContext(), "Frnd List: "+logger.frndlst+" for ID: "+Login.userID, Toast.LENGTH_SHORT).show();
+                updateFriendList();
+                downloadMarkers();
+            }
+        });
+
+    }
+
     private void downloadMarkers(){
 
 
@@ -241,13 +292,6 @@ for(int i=0;i<p.frnds.size();i++){
         pdMarkers2.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-
-
-
-                //TextView t=(TextView)findViewById(R.id.textView);
-                //t.setText(logger.markers);
-                //upDateMarkers(logger.markers);
-                //putMarkers();
                  if(debug)Toast.makeText(getApplicationContext(),"Marker String :"+logger.markers,Toast.LENGTH_LONG).show();
                  upDateMarkers(logger.markers);
                  putMarkers();
@@ -279,7 +323,7 @@ for(int i=0;i<p.frnds.size();i++){
 
             int cc2 = arr.indexOf("-");
             int avatar = Integer.parseInt(arr.substring(cc + 1, cc2));
-            p.frnds.add( new friend(n,gid,avatar));
+            if(!duplicateChecker(gid)){p.frnds.add( new friend(n,gid,avatar));}
             if(debug)Toast.makeText(getApplicationContext(),"Frnd added: "+n+"--"+gid+"--"+avatar,Toast.LENGTH_LONG).show();
             arr = arr.substring(cc2 + 1);
 
@@ -304,10 +348,10 @@ for(int i=0;i<p.frnds.size();i++){
             double lon = Double.parseDouble(markerString.substring(c+1, d));
 
             int e = markerString.indexOf("^");
-            int min = Integer.parseInt(markerString.substring(d + 1, e));
-              p.frnds.get(aa).position=new LatLng(lat,lon);
+            Long min = Long.parseLong(markerString.substring(d + 1, e));
+            p.frnds.get(aa).position=new LatLng(lat,lon);
              p.frnds.get(aa).time=min;
-
+            //Toast.makeText(getApplicationContext(), "Minute:"+min, Toast.LENGTH_SHORT).show();
             markerString = markerString.substring(e + 1);
             if(debug){  Toast.makeText(this, "Updated Markers ", Toast.LENGTH_LONG).show();}
 
@@ -320,6 +364,16 @@ for(int i=0;i<p.frnds.size();i++){
 
     }
 
+
+    private boolean duplicateChecker(int id){
+
+        for(int i=0;i<p.frnds.size();i++){
+            if(p.frnds.get(i).id==id){return true;}
+        }
+        return false;
+    }
+
+
 private void  putMarkers(){
 
     for(int i=0;i<p.frnds.size();i++) {
@@ -328,14 +382,19 @@ private void  putMarkers(){
         Date dt=new Date();
         String s=timeConverter(dt,p.frnds.get(i).time);
 
-
+        Integer dd=R.drawable.flash;
+        if(dd==1){dd=R.drawable.batman;}
+        if(dd==2){dd=R.drawable.ironman;}
+        if(dd==3){dd=R.drawable.punisher;}
         mMap.addMarker(new MarkerOptions()
                 .position(p.frnds.get(i).position)
                 .title(p.frnds.get(i).name)
                 .snippet(s)
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.batman)));
+                .icon(BitmapDescriptorFactory.fromResource(dd)));
     }
 }
+
+
 
 
 
@@ -380,7 +439,8 @@ private void  putMarkers(){
         while (c.moveToNext()) {
             resultFlag=true;
 
-               friend f = new friend(c.getString(2), new LatLng(c.getDouble(3), c.getDouble(4)), c.getInt(1), c.getInt(5), c.getInt(6));
+               friend f = new friend(c.getString(2), new LatLng(c.getDouble(3), c.getDouble(4)), c.getInt(1), c.getInt(5),
+                       c.getLong(6));
            boolean adderFlag=true;
             //cgecking if the sql row is already in RAM
             for(int counter=0;counter<p.frnds.size();counter++){if(p.frnds.get(counter).id==c.getInt(1)){adderFlag=false;}}
@@ -536,7 +596,7 @@ if(markerFlag){markerFlag=false;putMarkers();
              logger l = new logger(this, this, "asd");
             l.execute("updateLocation", location.getLatitude() + "", location.getLongitude() + "");
             firstTime=false;
-            Toast.makeText(getApplicationContext(),"Updated First Time",Toast.LENGTH_LONG).show();
+            if(debug)Toast.makeText(getApplicationContext(),"Updated First Time",Toast.LENGTH_LONG).show();
         }
 
 
@@ -547,7 +607,7 @@ if(markerFlag){markerFlag=false;putMarkers();
                 logger l = new logger(this, this, "asd");
                 l.execute("updateLocation", location.getLatitude() + "", location.getLongitude() + "");
                 cooldown=new Date();
-                Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
+                if(debug)Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
             }
 
         }
@@ -565,16 +625,7 @@ if(markerFlag){markerFlag=false;putMarkers();
         ltlng=latLng;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ltlng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
-//        MarkerOptions markerOptions = new MarkerOptions();
-//        markerOptions.position(latLng);
-//        markerOptions.title("Current Position");
-//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-//        //mCurrLocationMarker = mMap.addMarker(markerOptions);
-
-        //move map camera
-
-
-
+//
 
 
 
@@ -703,30 +754,35 @@ if(markerFlag){markerFlag=false;putMarkers();
 
 
     }
-private String timeConverter(Date now,int user){
+private String timeConverter(Date now,Long user){
 
 
-
+now=new Date();
 String s="";
-    double temp= (now.getTime()-(user*60*1000));
-    temp=temp/1000;
+
+    Long temp= now.getTime()/60000;
+      temp=temp-user;
+
+    if(debug){  Toast.makeText(getApplicationContext(),"Temp: "+temp,Toast.LENGTH_LONG).show();}
+    //Toast.makeText(getApplicationContext(),"Temp: "+temp,Toast.LENGTH_LONG).show();
+    if(temp<60){s=(Long)temp+" Mins ago";}
+    else{
     temp=temp/60;
-    if(debug){  Toast.makeText(getApplicationContext(),"now: "+now+" User: "+user,Toast.LENGTH_LONG).show();}
-if(temp<60){s=temp+" Mins ago";}
-  else{
-temp=temp/60;
-    if(temp<24){s=temp+" Hours ago";}
+    if(temp<24){s=(Long)temp+" Hours ago";}
     else{
         temp=temp/24;
-        if(temp<365){s=temp+" Days ago";}
-        else{
-            int year=(int)temp/365;
-            int day=(int)temp%365;
-            s=year +" Year(s) "+day+" Days ago";
+        if(temp<365){s=(Long)temp+" Days ago";}
+        else
+        {
+
+            Long year=(Long)temp/365;
+
+            s=year +" Year(s) ago";
+
         }
     }
 }
-
+    //if(debug){  Toast.makeText(getApplicationContext(),"Returning: "+s,Toast.LENGTH_LONG).show();}
     return s;
 }
 

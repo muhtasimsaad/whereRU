@@ -40,18 +40,16 @@
                 >
 
 
-
-
                 <AutoCompleteTextView
                     android:id="@+id/email"
-                    android:textColor="#9559f9"
-                    
                     android:layout_width="match_parent"
+
                     android:layout_height="wrap_content"
-                    android:hint="prompt_email"
+                    android:hint="email"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:textColor="#9559f9" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -61,28 +59,42 @@
 
                 <EditText
                     android:id="@+id/password"
-                    android:textColor="#9559f9"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="prompt_password"
+                    android:hint="password"
                     android:imeActionId="@+id/login"
                     android:imeActionLabel="action_sign_in_short"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:textColor="#9559f9" />
 
             </android.support.design.widget.TextInputLayout>
 
+            <CheckBox
+                android:id="@+id/checkedTextView"
+                android:layout_width="wrap_content"
+                android:textSize="15dp"
+                android:checked="false"
+                android:layout_height="wrap_content"
+                android:text="Keep me logged in" />
+
             <Button
                 android:id="@+id/email_sign_in_button"
-                style="?android:textAppearanceSmall"
+                style="?android:textAppearanceMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:text="Sign in"
                 android:textColor="#9559f9"
-                android:text="action_sign_in"
                 android:textStyle="bold" />
+            <TextView
+                android:layout_gravity="center"
+                android:id="@+id/signUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sing Up. Its free."/>
 
         </LinearLayout>
     </ScrollView>

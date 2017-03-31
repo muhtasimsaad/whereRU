@@ -23,6 +23,9 @@ import java.util.Date;
 public class logger extends AsyncTask<String,Void,String> {
     public static String frndlst="";
     public static String markers="";
+    public static String rqsts="";
+    private ProgressDialog pd;
+
     String temp="";
     String flag="";
     private Activity activity;
@@ -38,10 +41,13 @@ public class logger extends AsyncTask<String,Void,String> {
 
 
 
+        public static void goToLink(){
 
+        }
     @Override
     protected String doInBackground(String... params) {
-String serverIP="192.168.0.103";
+        //String serverIP="192.168.0.103";
+        String serverIP="tbone.000webhostapp.com";
         String login_url = "http://"+serverIP+"/login.php";
 
         try {
@@ -55,20 +61,32 @@ String serverIP="192.168.0.103";
 
             if(flag.equals("dlFriendList")){
 
-                login_url = "http://"+serverIP+"/downloadfriendlist.php";}
+                login_url = "http://"+serverIP+"/downloadFriendList.php";}
+            if(flag.equals("uploadImage")){
+
+                login_url = "http://"+serverIP+"/uploadImage.php";}
+            if(flag.equals("register")){
+
+                login_url = "http://"+serverIP+"/Cregister.php";}
             if(flag.equals("acceptRqst")){
 
                 login_url = "http://"+serverIP+"/acceptRqst.php";}
             if(flag.equals("rejectRqst")){
 
                 login_url = "http://"+serverIP+"/rejectRqst.php";}
+            if(flag.equals("changeAvatar")){
+
+                login_url = "http://"+serverIP+"/changeAvatar.php";}
             if(flag.equals("searchRqst")){
 
                 login_url = "http://"+serverIP+"/searchRqst.php";}
 
             if(flag.equals("dlMarkers")){
 
-                login_url = "http://"+serverIP+"/downloadlocations.php";}
+                login_url = "http://"+serverIP+"/downloadLocations.php";}
+            if(flag.equals("dlImage")){
+
+                login_url = "http://"+serverIP+"/downloadImage.php";}
             if(flag.equals("updateLocation")){
 
                 login_url = "http://"+serverIP+"/updateLocation.php";}
@@ -121,6 +139,25 @@ String serverIP="192.168.0.103";
 
 
             }
+            if(flag.equals("dlImage")){
+
+
+
+                String post_data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(Login.userID+"", "UTF-8") ;
+                bufferedWriter.write(post_data);
+
+
+
+            }
+            if(flag.equals("uploadImage")){
+
+
+
+                String post_data = URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(user_name, "UTF-8") + "&"
+                        + URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(Login.userID+"", "UTF-8");
+                bufferedWriter.write(post_data);
+
+            }
             if(flag.equals("searchRqst")){
 
 
@@ -142,7 +179,7 @@ String serverIP="192.168.0.103";
 
             }
 
-            if(flag.equals("delFrnd") || flag.equals("acceptRqst") || flag.equals("rejectRqst")){
+            if(flag.equals("delFrnd") || flag.equals("register") || flag.equals("changeAvatar")){
 
 
 
@@ -152,12 +189,22 @@ String serverIP="192.168.0.103";
 
 
             }
+            if( flag.equals("acceptRqst") || flag.equals("rejectRqst")){
+
+
+
+                String post_data = URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8") + "&"
+                        + URLEncoder.encode("reciever", "UTF-8") + "=" + URLEncoder.encode(user_name, "UTF-8");
+                bufferedWriter.write(post_data);
+
+
+            }
 
 
             if(flag.equals("updateLocation")){
 
                 Date dt=new Date();
-                double min=dt.getTime()/1000/60;
+                double min=dt.getTime()/60000;
 
                 String post_data =URLEncoder.encode("userID", "UTF-8") + "=" + URLEncoder.encode(Login.userID+","+min, "UTF-8") + "&"
                         +
@@ -199,10 +246,6 @@ String serverIP="192.168.0.103";
     protected void onPreExecute() {
         super.onPreExecute();
 
-        if(flag.equals("login"))
-        {
-            alertDialog = new AlertDialog.Builder(contex).create();
-            alertDialog.setTitle("login Status");}
 
 
 
@@ -217,18 +260,16 @@ String serverIP="192.168.0.103";
 
         // prasing the value came in
         if (flag.equals("login")) {
+        Login.pdMarkersLogin.dismiss();
             try {
                 int c = result.indexOf(",");
                 Login.userID = Integer.parseInt(result.substring(0, c));
                 AlertDialog.Builder builder = new AlertDialog.Builder(contex);
                 builder.setTitle("login Status");
-                builder.setMessage("Logged in");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setMessage("Welcome");
+                builder.setPositiveButton("continue", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
-
-
 
                         Intent myIntent = new Intent(contex, MapsActivity.class);
                         myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -261,12 +302,12 @@ String serverIP="192.168.0.103";
         }
         if (flag.equals("dlMarkers")) {
              logger.markers=result;
-            if(result.length()>0){MapsActivity.pdMarkers2.dismiss();}
+            MapsActivity.pdMarkers2.dismiss();
         }
         if (flag.equals("dlAll")) {
             // dummy.markers=result;
-            navigation_accounts.name=result;
-            navigation_accounts.pdMarkers.dismiss();
+            allPeople.name=result;
+            allPeople.pdMarkers.dismiss();
         }
         if (flag.equals("sendRqst")) {
             // dummy.markers=result;
@@ -280,18 +321,50 @@ String serverIP="192.168.0.103";
         }
         if (flag.equals("acceptRqst")) {
             // dummy.markers=result;
-            if(result.equals("done")){Toast.makeText(contex, "Friend added", Toast.LENGTH_SHORT).show();}
+            if(result.equals("done")){Toast.makeText(contex, "Friend added", Toast.LENGTH_SHORT).show();
+            MapsActivity.updateRequired=true;
+            }
             else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
         }
         if (flag.equals("rejectRqst")) {
             // dummy.markers=result;
             if(result.equals("done")){Toast.makeText(contex, "Request Removed", Toast.LENGTH_SHORT).show();}
-            else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
+            else{Toast.makeText(contex, "Error :"+result, Toast.LENGTH_SHORT).show();}
+        }
+        if (flag.equals("changeAvatar")) {
+            // dummy.markers=result;
+            if(result.equals("done")){Toast.makeText(contex, "Avatar Changed", Toast.LENGTH_SHORT).show();}
+            else{Toast.makeText(contex, "Error :"+result, Toast.LENGTH_SHORT).show();}
         }
         if (flag.equals("searchRqst")) {
-            // dummy.markers=result;
-           // if(result.equals("done")){Toast.makeText(contex, "Request Removed", Toast.LENGTH_SHORT).show();}
-           // else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
+            logger.rqsts=result;
+           //if(result.equals("")){Toast.makeText(contex, "NO Request found", Toast.LENGTH_SHORT).show();}
+           //else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
+            notifications.pdMarkersRqst.dismiss();
+        }
+        if (flag.equals("register")) {
+            signup.message=result;
+            //if(result.equals("done")){Toast.makeText(contex, "Request Removed", Toast.LENGTH_SHORT).show();}
+            // else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
+            signup.pd.dismiss();
+        }
+        if (flag.equals("uploadImage")) {
+
+            if(result.equals("done")){Toast.makeText(contex, "Image Uploaded", Toast.LENGTH_SHORT).show();}
+             else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
+
+        }
+        if (flag.equals("downloadImage")) {
+
+            if(result.equals("done")){
+
+
+                Toast.makeText(contex, "Image Uploaded", Toast.LENGTH_SHORT).show();
+
+
+            }
+            else{Toast.makeText(contex, "ERROR", Toast.LENGTH_SHORT).show();}
+
         }
     }
     @Override

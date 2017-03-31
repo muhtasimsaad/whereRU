@@ -9,13 +9,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -27,38 +28,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
-
+import net.gotev.uploadservice.Logger;
 import net.gotev.uploadservice.MultipartUploadRequest;
 import net.gotev.uploadservice.UploadNotificationConfig;
-
-import java.io.IOException;
-import java.util.UUID;
-
-
-
-import net.gotev.uploadservice.MultipartUploadRequest;
-import net.gotev.uploadservice.UploadNotificationConfig;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+
 
 public class navigation_accounts extends AppCompatActivity {
     public static final int RESULT_LOAD_IMAGE=0;
@@ -68,16 +44,12 @@ public class navigation_accounts extends AppCompatActivity {
     Integer[] imageid ;
     String times[] = {};
     static ProgressDialog pdMarkers;
+    static ProgressDialog pdMarkersRqst;
     private ListView listView;
-    EditText txt ;
+    //EditText txt;
     ImageView img ;
     Button select ;
     Button cancel ;
-
-    private Button buttonChoose;
-    private Button buttonUpload;
-
-    private ImageView imageView;
 
     //private EditText editTextName;
 
@@ -97,6 +69,8 @@ public class navigation_accounts extends AppCompatActivity {
 
     //Uri to store the image uri
     private Uri filePath;
+    TextView headerText;
+    ImageView headerImage;
 
     private String KEY_IMAGE = "image";
     private String KEY_NAME = "name";
@@ -109,11 +83,6 @@ public class navigation_accounts extends AppCompatActivity {
 
 
 
-
-
-
-
-
     final Context context = this;
     private TextView mTextMessage;
 
@@ -123,8 +92,12 @@ public class navigation_accounts extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.navigation_friends:
 
+                case R.id.navigation_friends:
+                    headerText=(TextView)findViewById(R.id.headerText);
+                    headerImage=(ImageView) findViewById(R.id.headerImage) ;
+                    headerImage.setImageResource(R.drawable.friends);
+                    headerText.setText("My friends");
                     listView = (ListView) findViewById(R.id.listView);
 
                     updateList();
@@ -132,7 +105,7 @@ public class navigation_accounts extends AppCompatActivity {
                     final CustomList customList = new CustomList((Activity) context, mobileArray,ids, imageid, times,2);
 
 
-                    txt.setVisibility(View.VISIBLE);
+                    //txt.setVisibility(View.VISIBLE);
                     img.setVisibility(View.GONE);
                     select.setVisibility(View.GONE);
                     cancel.setVisibility(View.GONE);
@@ -144,34 +117,62 @@ public class navigation_accounts extends AppCompatActivity {
 
                     return true;
                 case R.id.navigation_search:
+                    headerText=(TextView)findViewById(R.id.headerText);
 
+                    headerImage=(ImageView) findViewById(R.id.headerImage) ;
+                    headerImage.setImageResource(R.drawable.search);
+                   //headerText.setText("Find a Friend");
                      asd();
 
 
                     return true;
                 case R.id.navigation_avatar:
+//                    headerText=(TextView)findViewById(R.id.headerText);
+//                    headerImage=(ImageView) findViewById(R.id.headerImage) ;
+//                    headerImage.setImageResource(R.drawable.friends);
+//                    headerText.setText("Change Avatar");
+//                    listView = (ListView) findViewById(R.id.listView);
+//
+//                    updateListAvatar();
+//
+//                    final CustomList customList3 = new CustomList((Activity) context, mobileArray,ids, imageid, times,4);
+//
+//
+//                    //txt.setVisibility(View.VISIBLE);
+//                    img.setVisibility(View.GONE);
+//                    select.setVisibility(View.GONE);
+//                    cancel.setVisibility(View.GONE);
+//                    listView.setEnabled(true);
+//
+//
+//                    listView.setAdapter(customList3);
+//                    listView.setVisibility(View.VISIBLE);
+
+
+
+
+                    headerText=(TextView)findViewById(R.id.headerText);
+                    headerImage=(ImageView) findViewById(R.id.headerImage) ;
+                    headerImage.setImageResource(R.drawable.friends);
+                    headerText.setText("My Profile");
+                    listView = (ListView) findViewById(R.id.listView);
+                    img.setVisibility(View.VISIBLE);
+                    select.setVisibility(View.VISIBLE);
+                    cancel.setVisibility(View.VISIBLE);
+                    listView.setEnabled(false);
+                    listView.setVisibility(View.GONE);
                     showFileChooser();
+
+
+
+
+                    logger asd = new logger((Activity) context, (Activity) context, "--");
+                    asd.execute("uploadImage",bitmap+"", "");
+
+
+
                 return true;
                 case R.id.navigation_notifications:
-
-                    listView = (ListView) findViewById(R.id.listView);
-
-                    updateList(1);
-
-                    final CustomList customList2 = new CustomList((Activity) context, mobileArray,ids, imageid, times,3);
-
-
-                    txt.setVisibility(View.VISIBLE);
-                    img.setVisibility(View.GONE);
-                    select.setVisibility(View.GONE);
-                    cancel.setVisibility(View.GONE);
-                    listView.setEnabled(true);
-                    listView.setAdapter(customList2);
-                    listView.setVisibility(View.VISIBLE);
-
-
-
-
 
                     return true;
             }
@@ -179,6 +180,30 @@ public class navigation_accounts extends AppCompatActivity {
         }
 
     };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            filePath = data.getData();
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+                img.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private void showFileChooser() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+    }
 
     private void asd(){
 
@@ -193,11 +218,82 @@ public class navigation_accounts extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_accounts);
-        requestStoragePermission();
+        //requestStoragePermission();
+
+        getSupportActionBar().setBackgroundDrawable(new
+                ColorDrawable(getResources().getColor(R.color.theme)));
+
+
+        pdMarkersRqst = new ProgressDialog(navigation_accounts.this);
+        pdMarkersRqst.setTitle("Downloading");
+        pdMarkersRqst.setMessage("Please wait");
+        pdMarkersRqst.setCancelable(false);
+
+        pdMarkersRqst.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                headerText.setText("Friend Requests");
+                String arr = logger.rqsts;
+                //riya,1$1-akib,2$0-sakib,3$2-
+               // if(debug)Toast.makeText(getApplicationContext(),"Frndlist String: "+logger.frndlst,Toast.LENGTH_LONG).show();
+
+               try {
+                   int count = arr.length() - arr.replace("-", "").length();
+
+                   mobileArray = new String[count];
+                   ids = new int[count];
+                   imageid = new Integer[count];
+                   times = new String[count];
+                   for (int aa = 0; aa < count; aa++) {
+
+
+                       int c = arr.indexOf(",");
+                       String n = arr.substring(0, c);
+
+                       int cc = arr.indexOf("$");
+                       int gid = Integer.parseInt(arr.substring(c + 1, cc));
+
+                       int cc2 = arr.indexOf("-");
+                       int avatar = Integer.parseInt(arr.substring(cc + 1, cc2));
+                       mobileArray[aa] = n;
+                       ids[aa] = gid;
+                       imageid[aa] = R.drawable.flash;
+                       times[aa] = "";
+
+
+                       //if(debug)Toast.makeText(getApplicationContext(),"Frnd added: "+n+"--"+gid+"--"+avatar,Toast.LENGTH_LONG).show();
+                       arr = arr.substring(cc2 + 1);
+
+                   }
+
+
+                   final CustomList customList2 = new CustomList((Activity) context, mobileArray, ids, imageid, times, 3);
+
+
+                   //txt.setVisibility(View.VISIBLE);
+                   img.setVisibility(View.GONE);
+                   select.setVisibility(View.GONE);
+                   cancel.setVisibility(View.GONE);
+                   listView.setEnabled(true);
+                   listView.setAdapter(customList2);
+                   listView.setVisibility(View.VISIBLE);
+
+               }
+               catch (Exception er){
+
+                   Toast.makeText(getApplicationContext(),er.getMessage(),Toast.LENGTH_LONG).show();
+
+               }
+
+
+            }
+        });
 
 
 
-        txt = (EditText) findViewById(R.id.textView1);
+
+
+       // txt = (EditText) findViewById(R.id.textView1);
         img = (ImageView) findViewById(R.id.imageView4);
         select = (Button) findViewById(R.id.selectButton);
         cancel = (Button) findViewById(R.id.cancelButton);
@@ -209,7 +305,7 @@ public class navigation_accounts extends AppCompatActivity {
         final CustomList customList = new CustomList((Activity) context, mobileArray,ids, imageid, times,2);
 
 
-        txt.setVisibility(View.VISIBLE);
+        //txt.setVisibility(View.VISIBLE);
         img.setVisibility(View.GONE);
         select.setVisibility(View.GONE);
         cancel.setVisibility(View.GONE);
@@ -239,7 +335,7 @@ public class navigation_accounts extends AppCompatActivity {
             @Override
             public void onDismiss(DialogInterface dialog) {
 
-
+                headerText.setText("Find friends");
                 String times[] = {"","","","","","","","",};
                 //When download ends
                 try {
@@ -255,8 +351,8 @@ public class navigation_accounts extends AppCompatActivity {
                           names[aa] = n;
                           times[aa]="";
                         int cc = name.indexOf("-");
-                        int gid = Integer.parseInt(name.substring(c + 1, cc));
-                        imageid[aa] = R.drawable.batman;
+                        int avatar = Integer.parseInt(name.substring(c + 1, cc));
+                        imageid[aa] = avatar;
                         name = name.substring(cc + 1);
                      }
 
@@ -268,7 +364,7 @@ public class navigation_accounts extends AppCompatActivity {
 
 
                 final CustomList customList = new CustomList((Activity) context, names,ids, imageid, times,1);
-                txt.setVisibility(View.VISIBLE);
+                //txt.setVisibility(View.VISIBLE);
                 img.setVisibility(View.GONE);
                 select.setVisibility(View.GONE);
                 cancel.setVisibility(View.GONE);
@@ -284,7 +380,11 @@ public class navigation_accounts extends AppCompatActivity {
             }
         });
 
-
+        headerText=(TextView)findViewById(R.id.headerText);
+        headerImage=(ImageView)findViewById(R.id.headerImage);
+        headerImage.setImageResource(R.drawable.friends);
+        headerText.setText("My friends");
+        //headerText.getLayoutParams().height=80;
 
 
         //mTextMessage = (TextView) findViewById(R.id.message);
@@ -320,12 +420,6 @@ public class navigation_accounts extends AppCompatActivity {
 
 
     //method to show file chooser
-    private void showFileChooser() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-    }
 
 
     //handling the image chooser activity result
@@ -407,117 +501,34 @@ public class navigation_accounts extends AppCompatActivity {
 
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        filePath = data.getData();
-
-        try {
-            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-       // Toast.makeText(navigation_accounts.this, "Bitmap: "+filePath, Toast.LENGTH_LONG).show();
-        img.setVisibility(View.VISIBLE);
-        img.setImageBitmap(bitmap);
-        listView.setVisibility(View.GONE);
-        select.setVisibility(View.VISIBLE);
-        cancel.setVisibility(View.VISIBLE);
-        img.setImageBitmap(bitmap);
-
-//        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-//            filePath = data.getData();
-//            try {
-//                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
-//                imageView.setImageBitmap(bitmap);
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-    }
-
-
-
-
-
 
     public void updateList() {
         mobileArray = new String[MapsActivity.p.frnds.size()];
         imageid = new Integer[mobileArray.length];
         times= new String[mobileArray.length];
         ids=new int[mobileArray.length];
-//        Toast.makeText(context, MapsActivity.p.frnds.size()+"",Toast.LENGTH_LONG).show();
-//
-//        mobileArray =new String[] {"Android","IPhone","WindowsMobile","Blackberry","WebOS","Ubuntu","Windows7","Max OS X"};
-//        imageid =new Integer[] {R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,
-//                R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,};
-//        times= new String[]{"", "", "", "", "", "", "", "",};
-//
-
-
-
-            for (int c = 0; c < mobileArray.length; c++) {
+          for (int c = 0; c < mobileArray.length; c++) {
                 mobileArray[c]=MapsActivity.p.frnds.get(c).name;//names[c] = MainActivity.userFriendList[c].name;
                 times[c]="Just Now";
                 ids[c]=MapsActivity.p.frnds.get(c).id;
-                int asd=0;//int asd = MainActivity.userFriendList[c].avatar;
-                if (asd == 0) {
-                    imageid[c] = R.drawable.punisher;
-                }
-                if (asd == 1) {
-                    imageid[c] = R.drawable.flash;
-                }
-                if (asd == 2) {
-                    imageid[c] = R.drawable.ironman;
-                }
-                if (asd == 3) {
-                    imageid[c] = R.drawable.batman;
-                }
-
-
-            }
+                imageid[c]= MapsActivity.p.frnds.get(c).imageID;
+ }
 
 
     }
-    public void updateList(int i) {
-        mobileArray = new String[MapsActivity.p.frnds.size()];
-        imageid = new Integer[mobileArray.length];
-        times= new String[mobileArray.length];
-        ids=new int[mobileArray.length];
-//        Toast.makeText(context, MapsActivity.p.frnds.size()+"",Toast.LENGTH_LONG).show();
-//
-//        mobileArray =new String[] {"Android","IPhone","WindowsMobile","Blackberry","WebOS","Ubuntu","Windows7","Max OS X"};
-//        imageid =new Integer[] {R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,
-//                R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,R.drawable.punisher,};
-//        times= new String[]{"", "", "", "", "", "", "", "",};
-//
+private void updateListAvatar(){
+    mobileArray = new String []{"Flash","Batman","Punisher","Ironman"};
+    imageid = new Integer[]{0,1,2,3};
+    times= new String[]{"","","",""};
+    ids=new int[]{0,1,2,3};
 
+}
 
-
-        for (int c = 0; c < mobileArray.length; c++) {
-            mobileArray[c]=MapsActivity.p.frnds.get(c).name;//names[c] = MainActivity.userFriendList[c].name;
-            times[c]="Just Now";
-            ids[c]=MapsActivity.p.frnds.get(c).id;
-            int asd=0;//int asd = MainActivity.userFriendList[c].avatar;
-            if (asd == 0) {
-                imageid[c] = R.drawable.punisher;
-            }
-            if (asd == 1) {
-                imageid[c] = R.drawable.flash;
-            }
-            if (asd == 2) {
-                imageid[c] = R.drawable.ironman;
-            }
-            if (asd == 3) {
-                imageid[c] = R.drawable.batman;
-            }
-
-
-        }
-
-
+    @Override
+    public void onBackPressed() {
+        // do something on back.
+        Intent i=new Intent(navigation_accounts.this,MapsActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(i);
     }
-
-
 }

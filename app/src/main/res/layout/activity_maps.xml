@@ -28,6 +28,18 @@
         android:layout_alignParentStart="true"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp" />
+    <Button
+        android:layout_width="90px"
+        android:layout_height="90px"
+        android:text=" "
+        android:background= "@drawable/logout"
+        android:id="@+id/logout"
+        android:layout_marginBottom="41dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+
+        android:layout_marginRight="15dp"
+         />
 
     <Button
         android:layout_width="90px"

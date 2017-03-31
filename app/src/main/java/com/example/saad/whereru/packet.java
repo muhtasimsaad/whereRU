@@ -28,10 +28,10 @@ public class packet {
 class friend{
     String name;
     LatLng position;
-    int time;
+    Long time;
     int id;
     int imageID;
-    public friend(String n,LatLng p,int i,int ii,int d){
+    public friend(String n,LatLng p,int i,int ii,Long d){
         time=d;
         name=n;
         position=p;
